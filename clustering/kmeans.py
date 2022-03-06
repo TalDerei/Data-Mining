@@ -1,9 +1,7 @@
-from xml.dom import INDEX_SIZE_ERR
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import random
-np.set_printoptions(threshold=10000)
 import matplotlib.pyplot as graph
 
 class kmeans:
