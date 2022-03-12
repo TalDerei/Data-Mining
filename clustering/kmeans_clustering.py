@@ -1,8 +1,12 @@
+from calendar import c
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import random
 import matplotlib.pyplot as graph
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import confusion_matrix
 
 class kmeans:
     # default constructor
@@ -15,16 +19,16 @@ class kmeans:
         # perform dimentionality reduction
         self.dimentionality_reduction(user_input)
         
-        columns = len(self.data.columns)
+        self.columns = len(self.data.columns)
 
         # convert input to 2D array
         self.data = self.data.to_numpy()
 
         # choose k random points as centroids
-        self.create_centroids(self.data, columns)
+        self.create_centroids(self.data, self.columns)
 
         # NxN dimentional array for clusters
-        self.clusters = np.array([]).reshape(0, columns) 
+        self.clusters = np.array([]).reshape(0, self.columns) 
 
         # run k-means until convergence
         for _ in range(self.max_iterations):
@@ -34,30 +38,33 @@ class kmeans:
             # update centroids by calculating mean of all points associated with centroid
             for idx in enumerate(self.clusters):
                 self.centroids[idx[0]] = np.mean(idx[1], axis=0)
-        
+
+        # print cluster results and accuracies
+        self.results(user_input)
+
         # plot datasets
-        self.plot_data(self.centroids, self.clusters, columns, user_input)
+        self.plot_data(self.centroids, self.clusters, self.columns, user_input)
     
     # dimentionality reduction
     def dimentionality_reduction(self, user_input):
         # read input file and clean datasets
-        if (user_input == 'cho.txt'): 
+        if (user_input == 'spectral_cho.txt' or user_input == 'cho.txt'): 
             self.K = 5
-            self.data = pd.read_csv(user_input, header = None, delimiter = "	")
+            self.data = pd.read_csv(user_input, header = None, delimiter = " ")
+            self.data_original = pd.read_csv(user_input, header = None, delimiter = " ")
             self.data.pop(self.data.columns[0])
             self.data.pop(self.data.columns[0])
-        if (user_input == 'iyer.txt'):
-            self.K = 5
-            self.data = pd.read_csv(user_input, header = None, delimiter = ",")
+        if (user_input == 'spectral_iyer.txt' or user_input == 'iyer.txt'):
+            self.K = 10
+            self.data = pd.read_csv(user_input, header = None, delimiter = " ")
+            self.data_original = pd.read_csv(user_input, header = None, delimiter = " ")
             self.data.pop(self.data.columns[0])
             self.data.pop(self.data.columns[0])
             self.data.pop(self.data.columns[0])
         if (user_input == 'square.txt' or user_input == 'elliptical.txt'):
             self.K = 2
             self.data = pd.read_csv(user_input, header = None, delimiter = " ")
-        if (user_input == 'spectral_square.txt' or user_input == 'spectral_elliptical.txt'):
-            self.K = 2
-            self.data = pd.read_csv(user_input, header = None, delimiter = " ")
+            self.data_original = pd.read_csv(user_input, header = None, delimiter = " ")
 
     # choose k random centroid
     def create_centroids(self, data, columns):
@@ -78,6 +85,53 @@ class kmeans:
             clusters[index].append(i[1])
         return clusters
 
+    def results(self, user_input):
+        print("Clustering Labels:")
+        labels = []
+        for i, j in enumerate(self.clusters):
+            for id in j:
+                labels.append(i)
+        print(labels)
+
+        # External and Internal Index:
+        if (user_input == 'iyer.txt' or user_input == 'spectral_iyer.txt'):
+            self.data_original_new = pd.read_csv("iyer.txt", header = None, delimiter = " ")
+            print("Accuracies: ")
+            accuracies = []
+            for i, j in enumerate(self.data_original_new[1]):
+                accuracies.append(j)
+            print(accuracies)
+            print("Accuracies: ")
+            print(accuracy_score(labels, accuracies))
+
+            # taken from L9 Google Collab notebook (this is the only way I found to do a confusion matrix!)
+            confusion_matrixs = confusion_matrix(accuracies, labels)
+            graph.imshow(confusion_matrixs,interpolation='none',cmap='Blues')
+            for (i, j), z in np.ndenumerate(confusion_matrixs):
+                graph.text(j, i, z, ha='center', va='center')
+            graph.xlabel("ground truth")
+            graph.ylabel("clusters")
+            graph.show()
+
+        if (user_input == 'cho.txt' or user_input == 'spectral_cho.txt'):
+            self.data_original_new = pd.read_csv("cho.txt", header = None, delimiter = " ")
+            accuracies = []
+            for i, j in enumerate(self.data_original_new[1]):
+                accuracies.append(j)
+            print(accuracies)
+            print("Accuracies: ")
+            print(accuracy_score(labels, accuracies))
+
+            confusion_matrixs = confusion_matrix(accuracies, labels)
+            graph.imshow(confusion_matrixs,interpolation='none',cmap='Blues')
+            for (i, j), z in np.ndenumerate(confusion_matrixs):
+                graph.text(j, i, z, ha='center', va='center')
+            graph.xlabel("ground truth")
+            graph.ylabel("clusters")
+            graph.show()
+        
+        
+
     # plot data points 
     def plot_data(self, centroids, clusters, columns, user_input):
         print(user_input)
@@ -94,20 +148,34 @@ class kmeans:
             self.temp = np.array([]).reshape(0, columns)
             counter += 1
 
-        if (user_input == 'square.txt' or user_input == 'elliptical.txt' or user_input == 'spectral.txt'): 
+        if (user_input == 'square.txt' or user_input == 'elliptical.txt'): 
             x,y = np.split(centroids, 2, axis = 1)
             graph.scatter(x, y, color = 'red', marker = "x", alpha = 1)
             graph.scatter(self.temp_new[0][:,0],self.temp_new[0][:,1], c = 'blue')
             graph.scatter(self.temp_new[1][:,0],self.temp_new[1][:,1], c = 'red')
             graph.title('K-Means Dataset')
             graph.show()
-        if (user_input == 'cho.txt' or user_input == 'iyer.txt'):
+        if (user_input == 'cho.txt'):
             graph.scatter(self.centroids[:,0],self.centroids[:,1], c = 'red', marker = "x", alpha = 1)
             graph.scatter(self.temp_new[0][:,0],self.temp_new[0][:,1], c = 'blue')
             graph.scatter(self.temp_new[1][:,0],self.temp_new[1][:,1], c = 'red')
             graph.scatter(self.temp_new[2][:,0],self.temp_new[2][:,1], c = 'yellow')
             graph.scatter(self.temp_new[3][:,0],self.temp_new[3][:,1], c = 'green')
             graph.scatter(self.temp_new[4][:,0],self.temp_new[4][:,1], c = 'orange')
+            graph.title('K-Means Dataset')
+            graph.show()
+        if (user_input == 'iyer.txt'):
+            graph.scatter(self.centroids[:,0],self.centroids[:,1], c = 'red', marker = "x", alpha = 1)
+            graph.scatter(self.temp_new[0][:,0],self.temp_new[0][:,1], c = 'blue')
+            graph.scatter(self.temp_new[1][:,0],self.temp_new[1][:,1], c = 'red')
+            graph.scatter(self.temp_new[2][:,0],self.temp_new[2][:,1], c = 'yellow')
+            graph.scatter(self.temp_new[3][:,0],self.temp_new[3][:,1], c = 'green')
+            graph.scatter(self.temp_new[4][:,0],self.temp_new[4][:,1], c = 'orange')
+            graph.scatter(self.temp_new[5][:,0],self.temp_new[5][:,1], c = 'orange')
+            graph.scatter(self.temp_new[6][:,0],self.temp_new[6][:,1], c = 'orange')
+            graph.scatter(self.temp_new[7][:,0],self.temp_new[7][:,1], c = 'orange')
+            graph.scatter(self.temp_new[8][:,0],self.temp_new[8][:,1], c = 'orange')
+            graph.scatter(self.temp_new[9][:,0],self.temp_new[9][:,1], c = 'orange')
             graph.title('K-Means Dataset')
             graph.show()
             
