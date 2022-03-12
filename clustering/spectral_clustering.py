@@ -53,7 +53,7 @@ class spectral:
             self.data.pop(self.data.columns[0])
             self.data.pop(self.data.columns[0])
         if (user_input == 'iyer.txt'):
-            self.K = 5
+            self.K = 10
             self.data = pd.read_csv(user_input, header = None, delimiter = " ")
             self.data.pop(self.data.columns[0])
             self.data.pop(self.data.columns[0])
@@ -136,11 +136,13 @@ class spectral:
             graph.scatter(data[:, 0], data[:, 1],c = self.eigen_vector[:,1])
             graph.show()
             print(self.eigen_vector[:,1])
+
         if (user_input == "iyer.txt"):
             print(self.eigen_vector)
             np.savetxt("spectral_iyer.txt", self.eigen_vector)
             k = km.kmeans(5, 100)
             KMeans = k.run_kmeans("spectral_iyer.txt")
+            
         if (user_input == "cho.txt"):
             print(self.eigen_vector)
             np.savetxt("spectral_cho.txt", self.eigen_vector)

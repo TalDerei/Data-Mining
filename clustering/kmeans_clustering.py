@@ -5,7 +5,6 @@ import seaborn as sns
 import random
 import matplotlib.pyplot as graph
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import mean_squared_error
 from sklearn.metrics import confusion_matrix
 
 class kmeans:
